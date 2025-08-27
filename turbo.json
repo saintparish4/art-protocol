@@ -1,0 +1,169 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "ui": "tui",
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "!**/*.md",
+        "!**/*.test.*",
+        "!**/*.spec.*"
+      ],
+      "outputs": [
+        "dist/**",
+        "build/**",
+        ".next/**",
+        "out/**",
+        "artifacts/**"
+      ],
+      "env": [
+        "NODE_ENV",
+        "NEXT_PUBLIC_*"
+      ]
+    },
+    "test": {
+      "dependsOn": ["^build"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "**/*.test.*",
+        "**/*.spec.*"
+      ],
+      "outputs": [
+        "coverage/**",
+        "test-results/**"
+      ],
+      "env": [
+        "NODE_ENV"
+      ]
+    },
+    "test:unit": {
+      "dependsOn": ["^build"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "**/*.test.*",
+        "**/*.spec.*"
+      ],
+      "outputs": [
+        "coverage/**"
+      ]
+    },
+    "test:e2e": {
+      "dependsOn": ["build"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "**/*.e2e.*"
+      ],
+      "outputs": [
+        "test-results/**",
+        "playwright-report/**"
+      ]
+    },
+    "lint": {
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "!**/*.md"
+      ],
+      "outputs": []
+    },
+    "lint:fix": {
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "!**/*.md"
+      ],
+      "outputs": [],
+      "cache": false
+    },
+    "type-check": {
+      "dependsOn": ["^build"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "!**/*.md"
+      ],
+      "outputs": []
+    },
+    "dev": {
+      "dependsOn": ["^build"],
+      "cache": false,
+      "persistent": true,
+      "env": [
+        "NODE_ENV",
+        "NEXT_PUBLIC_*",
+        "DATABASE_URL",
+        "REDIS_URL"
+      ]
+    },
+    "start": {
+      "dependsOn": ["build"],
+      "cache": false,
+      "persistent": true,
+      "env": [
+        "NODE_ENV",
+        "NEXT_PUBLIC_*",
+        "DATABASE_URL",
+        "REDIS_URL"
+      ]
+    },
+    "clean": {
+      "cache": false,
+      "outputs": []
+    },
+    "format": {
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "!**/*.md"
+      ],
+      "outputs": [],
+      "cache": false
+    },
+    "compile": {
+      "dependsOn": ["^build"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "contracts/**/*.sol"
+      ],
+      "outputs": [
+        "artifacts/**",
+        "cache/**",
+        "typechain/**"
+      ],
+      "env": [
+        "HARDHAT_NETWORK",
+        "ETHERSCAN_API_KEY"
+      ]
+    },
+    "deploy": {
+      "dependsOn": ["compile", "test"],
+      "cache": false,
+      "env": [
+        "PRIVATE_KEY",
+        "ETHERSCAN_API_KEY",
+        "HARDHAT_NETWORK"
+      ]
+    },
+    "verify": {
+      "dependsOn": ["deploy"],
+      "cache": false,
+      "env": [
+        "ETHERSCAN_API_KEY",
+        "HARDHAT_NETWORK"
+      ]
+    }
+  },
+  "globalEnv": [
+    "NODE_ENV",
+    "CI",
+    "VERCEL",
+    "TURBO_TEAM",
+    "TURBO_TOKEN"
+  ],
+  "globalDependencies": [
+    "package.json",
+    "pnpm-lock.yaml",
+    "pnpm-workspace.yaml",
+    "turbo.json",
+    ".env",
+    ".env.local",
+    "tsconfig.json"
+  ]
+}
