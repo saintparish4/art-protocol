@@ -2,11 +2,12 @@
 pragma solidity ^0.8.3; // solidity version (Watch out for this)
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
-import "openzeppelin/contracts/token/ERC20/extensions/ERC20Votes.sol";
-import "openzeppelin/contracts/access/Ownable.sol";
-import "openzeppelin/contracts/security/Pausable.sol";
-import "openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Permit.sol";
+import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
+import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Votes.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/Pausable.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 /**
  * @title ARTToken
@@ -22,6 +23,7 @@ import "openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 contract ARTToken is
     ERC20,
+    ERC20Permit,
     ERC20Burnable,
     ERC20Votes,
     Ownable,
@@ -56,6 +58,7 @@ contract ARTToken is
     constructor()
         ERC20("ART Protocol Token", "ART")
         ERC20Permit("ART Protocol Token")
+        Ownable(msg.sender)
     {
         // Mint initial supply to deployer (Treasury allocation)
         _mint(msg.sender, INITIAL_SUPPLY);
@@ -117,7 +120,7 @@ contract ARTToken is
         uint256 blocksPassed = block.number - lastEmissionBlock;
         require(blocksPassed > 0, "ARTToken: no blocks passed");
 
-        uint256 emisssionAmount = blocksPassed * emissionRate;
+        uint256 emissionAmount = blocksPassed * emissionRate;
 
         if (totalMinted + emissionAmount > MAX_SUPPLY) {
             emissionAmount = MAX_SUPPLY - totalMinted;
@@ -221,13 +224,15 @@ contract ARTToken is
 
     // ==  Overrides ==
 
-    function _beforeTokenTransfer(
+    function nonces(address owner) public view override(ERC20Permit, Nonces) returns (uint256) {
+        return super.nonces(owner);
+    }
+
+    function _update(
         address from,
         address to,
         uint256 amount
     ) internal override(ERC20, ERC20Votes) {
-        super._beforeTokenTransfer(from, to, amount);
-
         // Check wallet holding limit for regular transfers (not minting)
         if (from != address(0) && to != address(0) && !excludedFromLimit[to]) {
             require(
@@ -235,27 +240,21 @@ contract ARTToken is
                 "ARTToken: transfer exceed max wallet holding"
             );
         }
-    }
 
-    function _afterTokenTransfer(
-        address from,
-        address to,
-        uint256 amount
-    ) internal override(ERC20, ERC20Votes) {
-        super._afterTokenTransfer(from, to, amount);
+        super._update(from, to, amount);
     }
 
     function _mint(
         address to,
         uint256 amount
-    ) internal override(ERC20, ERC20Votes) {
+    ) internal override {
         super._mint(to, amount);
     }
 
     function _burn(
         address account,
         uint256 amount
-    ) internal override(ERC20, ERC20Votes) {
+    ) internal override {
         super._burn(account, amount);
         emit TokensBurned(account, amount);
     }

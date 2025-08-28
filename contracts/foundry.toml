@@ -4,6 +4,9 @@ out = "out"
 libs = ["lib"]
 test = "test"
 cache_path = "cache_forge"
+remappings = [
+    "@openzeppelin/contracts/=node_modules/@openzeppelin/contracts/"
+]
 
 [profile.default.optimizer]
 enabled = true

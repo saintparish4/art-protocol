@@ -2,8 +2,8 @@
 pragma solidity ^0.8.3;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "@openzeppelin/contracts/security/Pausable.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/Pausable.sol";
 import "../interfaces/ITokenomicEngine.sol";
 import "../libraries/YieldCalculations.sol";
 
@@ -17,8 +17,8 @@ import "../libraries/YieldCalculations.sol";
  * - Market condition adaptive yields
  * - Protocol health metrics integration
  */
-contract TokenomicsEngine is
-    ITokenomicEngine,
+contract TokenomicEngine is
+    ITokenomicsEngine,
     Ownable,
     Pausable,
     ReentrancyGuard
@@ -110,7 +110,7 @@ contract TokenomicsEngine is
 
     // ===== Constructor =====
 
-    constructor() {
+    constructor() Ownable(msg.sender) {
         _initializeDefaultTiers();
         currentMarketCondition = MarketCondition({
             volatilityIndex: 1000, // 10% default volatility
@@ -336,7 +336,7 @@ contract TokenomicsEngine is
         timeInTier = block.timestamp - userStake.startTime;
         tierMultiplier = _getTierMultiplier(userStake.tier, timeInTier);
         marketMultiplier = _getMarketMultiplier();
-        currentYield = calculateDynamicYield(user, userStake.amount); 
+        currentYield = this.calculateDynamicYield(user, userStake.amount); 
     }
 
     /**
